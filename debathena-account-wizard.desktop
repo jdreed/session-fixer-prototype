@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Repair My Athena Account
+Comment=This launches a wizard to help you fix common problems in your account.
+Exec=/usr/lib/debathena-fix-my-session/fix-my-session
+TryExec=/usr/lib/debathena-fix-my-session/fix-my-session
+Icon=
+Type=Application
+
