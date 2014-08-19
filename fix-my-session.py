@@ -35,7 +35,7 @@ class WizardAction:
     _section = 'AccountWizardAction'
 
     def __init__(self, dirname, filename, builder):
-        config = ConfigParser.RawConfigParser({'help': None,
+        config = ConfigParser.RawConfigParser({'help': 'Help not available.',
                                                'title': None,
                                                'script': None,
                                                'confirm': None})

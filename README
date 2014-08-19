@@ -1,0 +1,9 @@
+Actions are defined by .action files in the "actions" directory (usually
+/usr/share/something).  It is a standard INI file, with one section
+('AccountWizardAction'), and four keys (title, help, confirm, script).
+'title' is a short title, help and confirm are help text and
+confirmation text, respectively.  
+'script' is a shell script, in the actions directory, to run.  The
+script can generate output on stdout and stderr which will be displayed
+to the user, and should exit 0 or non-zero to indicate success or
+failure.  DISPLAY is not set, and graphical applications cannot be used.
