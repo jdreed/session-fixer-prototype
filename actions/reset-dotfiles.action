@@ -1,0 +1,6 @@
+[AccountWizardAction]
+title=Reset Your "Dotfiles"
+help=This will reset your "dotfiles" (configuration files) to the
+ default settings.  Any changes you made will be saved in a backup
+ directory so you may refer to them later.
+script=reset-dotfiles.sh

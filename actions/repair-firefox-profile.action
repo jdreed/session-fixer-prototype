@@ -1,0 +1,6 @@
+[AccountWizardAction]
+title=Repair Your Firefox Certificates
+help=This will repair your MIT Personal Certificates in Firefox, by
+ resetting the security database.  You will lose all personal
+ certificates stored in the database and will have to re-obtain them.
+script=reset-certificates.sh
