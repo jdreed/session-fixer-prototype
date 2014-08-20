@@ -4,6 +4,7 @@
 from gi.repository import Gtk, GLib
 
 import ConfigParser
+import errno
 import fnmatch
 import logging
 import os
@@ -13,8 +14,9 @@ import subprocess
 
 from optparse import OptionParser
 
-UI_FILE="/usr/share/debathena-session-fixer/fix-my-session.ui"
-ACTIONS_DIR="/usr/share/debathena-session-fixer/actions"
+UI_FILE="/usr/share/debathena-account-repair/account-repair-wizard.ui"
+ACTIONS_DIR="/usr/share/debathena-account-repair/actions"
+SCRIPTS_DIR="/usr/lib/debathena-account-repair/scripts"
 
 STRIP_ENVIRON = ('DISPLAY', )
 
@@ -28,30 +30,38 @@ class WizardActionException(Exception):
     pass
 
 class WizardConfigException(Exception):
-    pass
+    def __init__(self, filename, *args):
+        super(WizardConfigException, self).__init__(*args)
+        self.filename = filename
 
 class WizardAction:
     _mandatory_options = ['title', 'script']
     _section = 'AccountWizardAction'
 
-    def __init__(self, dirname, filename, builder):
+    def __init__(self, options, filename, builder):
         config = ConfigParser.RawConfigParser({'help': 'Help not available.',
                                                'title': None,
                                                'script': None,
                                                'confirm': None})
-        config.read(os.path.join(dirname, filename))
+        config.read(os.path.join(options.actions_dir, filename))
         if not config.has_section(self._section):
-            raise WizardConfigException('Not a valid action file')
-        self.script = os.path.join(dirname, config.get(self._section, 'script'))
+            raise WizardConfigException(filename,
+                                        "Not a valid action file.")
+        self.script = os.path.join(options.scripts_dir,
+                                   config.get(self._section, 'script'))
         self.title = config.get(self._section, 'title')
         self.help = config.get(self._section, 'help')
         self.confirm = config.get(self._section, 'confirm')
         if self.title is None or self.script is None:
-            raise WizardConfigException('Not a valid action file')
+            raise WizardConfigException(filename,
+                                        "Not a valid action file.")
         self.builder = builder
 
     def run_callback(self, widget, data=None):
         ask = self.builder.get_object("confirm_dialog")
+        # Prevent the dialog from staying huge if some actions have a
+        # confirmation and others don't.
+        ask.resize(*ask.get_default_size())
         self.builder.get_object("confirm_title_label").set_text(self.title)
         if self.confirm is None:
             self.builder.get_object("confirm_text_label").set_visible(False)
@@ -94,6 +104,7 @@ class WizardAction:
 
     def help_dialog(self, widget, data=None):
         dlg = self.builder.get_object("help_dialog")
+        dlg.resize(*dlg.get_default_size())
         self.builder.get_object("help_title_label").set_text(self.title)
         self.builder.get_object("help_text_label").set_text(
             self.help.replace("\n", " "))
@@ -123,7 +134,7 @@ class SessionFixer:
         if options.debug:
             self.logger.setLevel(logging.DEBUG)
         self.builder = Gtk.Builder()
-        try: 
+        try:
             self.builder.add_from_file(options.ui_file)
             self.logger.debug("Builder UI loaded")
         except GLib.GError as e:
@@ -135,29 +146,30 @@ class SessionFixer:
                                                pwent.pw_name)
         self.builder.get_object("username_label").set_text(userlabel)
         self.builder.get_object("main_window").show_all()
+        self.options = options
         self._populate_actions()
-    
+
     def _populate_actions(self):
         self.actions = []
         box = self.builder.get_object("actions_box")
+        action_files = []
         try:
-            for f in fnmatch.filter(os.listdir(options.actions_dir),
-                                    '*.action'):
-                self.actions.append(WizardAction(options.actions_dir,
-                                                 f, self.builder))
+            action_files = fnmatch.filter(os.listdir(self.options.actions_dir),
+                                          '*.action')
         except OSError as e:
-            error = Gtk.Label()
-            error.show()
-            if e.errno == errno.ENOENT:
-                error.set_text("Cannot find any actions for the wizard to run.")
-            else:
-                error.set_text("Unexpected error: " + e.message)
-            box.pack_start(error, False, False, 2)
-        
+            if e.errno not in (errno.ENOENT, errno.EACCES):
+                logger.warning("Unexpected error: %s", e.message)
+        for f in action_files:
+            try:
+                self.actions.append(WizardAction(self.options, f, self.builder))
+            except WizardConfigException as e:
+                logger.warning("Ignoring file '%s': %s",
+                               e.filename, e.message)
         for a in self.actions:
             box.pack_start(a.widget(), False, False, 2)
-            
-
+        if len(action_files) < 1:
+            box.pack_start(self.builder.get_object("no_actions_label"),
+                           False, False, 2)
 
     def quit(self):
         Gtk.main_quit()
@@ -165,14 +177,22 @@ class SessionFixer:
     def on_quit_button_clicked(self, widget, data=None):
         self.quit()
 
+    def on_main_window_delete_event(self, event, data=None):
+        self.quit()
+
+
 if __name__ == '__main__':
     parser = OptionParser()
     parser.set_defaults(debug=False,
                         ui_file=UI_FILE,
-                        actions_dir=ACTIONS_DIR)
+                        actions_dir=ACTIONS_DIR,
+                        scripts_dir=SCRIPTS_DIR)
     parser.add_option("--debug", action="store_true", dest="debug")
     parser.add_option("--ui", action="store", type="string", dest="ui_file")
-    parser.add_option("--dir", action="store", type="string", dest="actions_dir")
+    parser.add_option("--actions", action="store",
+                      type="string", dest="actions_dir")
+    parser.add_option("--scripts", action="store",
+                      type="string", dest="scripts_dir")
     (options, args) = parser.parse_args()
     app = SessionFixer(options)
     Gtk.main()

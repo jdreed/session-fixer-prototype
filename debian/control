@@ -1,0 +1,18 @@
+Source: debathena-account-repair
+Section: debathena/base
+Priority: extra
+Maintainer: Debathena Project <debathena@mit.edu>
+Build-Depends: debhelper (>= 8.0.0), python-support
+Standards-Version: 3.9.4
+
+Package: debathena-account-repair
+Architecture: all
+Depends: python,
+	 python-gobject,
+	 gir1.2-glib-2.0,
+	 gir1.2-gtk-3.0,
+	 ${python:Depends},
+	 ${misc:Depends}
+Description: Wizard to aid in fixing common account issues
+ This package provides an xsession which launches a wizard designed
+ to help users fix common account problems.

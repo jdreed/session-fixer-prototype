@@ -8,6 +8,7 @@
     <property name="window_position">center</property>
     <property name="default_width">640</property>
     <property name="default_height">480</property>
+    <signal name="delete-event" handler="on_main_window_delete_event" swapped="no"/>
     <child>
       <object class="GtkBox" id="box1">
         <property name="visible">True</property>
@@ -97,6 +98,8 @@
   <object class="GtkDialog" id="confirm_dialog">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Confirm</property>
+    <property name="default_width">250</property>
+    <property name="default_height">120</property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">main_window</property>
     <child internal-child="vbox">
@@ -212,6 +215,8 @@
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Help</property>
     <property name="window_position">center-on-parent</property>
+    <property name="default_width">320</property>
+    <property name="default_height">150</property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">main_window</property>
     <child internal-child="vbox">
@@ -247,42 +252,43 @@
           </packing>
         </child>
         <child>
-          <object class="GtkFrame" id="frame1">
+          <object class="GtkBox" id="box4">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label_xalign">0</property>
-            <property name="shadow_type">in</property>
+            <property name="margin_left">10</property>
+            <property name="margin_right">10</property>
+            <property name="margin_top">5</property>
+            <property name="margin_bottom">5</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">10</property>
             <child>
-              <object class="GtkAlignment" id="alignment1">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="left_padding">12</property>
-                <child>
-                  <object class="GtkLabel" id="help_text_label">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="margin_right">3</property>
-                    <property name="margin_top">3</property>
-                    <property name="margin_bottom">3</property>
-                    <property name="label" translatable="yes">&lt;help&gt;</property>
-                    <property name="wrap">True</property>
-                    <property name="width_chars">50</property>
-                    <property name="max_width_chars">50</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child type="label">
               <object class="GtkLabel" id="help_title_label">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin_left">5</property>
-                <property name="margin_right">5</property>
                 <property name="label" translatable="yes">&lt;title&gt;</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>
               </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="help_text_label">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="ypad">2</property>
+                <property name="label" translatable="yes">&lt;help&gt;</property>
+                <property name="wrap">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
             </child>
           </object>
           <packing>
@@ -296,6 +302,14 @@
     <action-widgets>
       <action-widget response="-5">button1</action-widget>
     </action-widgets>
+  </object>
+  <object class="GtkLabel" id="no_actions_label">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="margin_top">20</property>
+    <property name="label" translatable="yes">Could not find any actions for the wizard to run.
+Please try another workstation.</property>
+    <property name="justify">center</property>
   </object>
   <object class="GtkDialog" id="output_dialog">
     <property name="can_focus">False</property>
